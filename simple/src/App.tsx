@@ -102,12 +102,12 @@ function getNewMessageID(): number {
 
 // define addresses
 
-const adalheidAddress = new SignalProtocolAddress("adalheid", 1);
-const brunhildeAddress = new SignalProtocolAddress("brünhild", 1);
+const duvanAddress = new SignalProtocolAddress("duvan", 1);
+const sebastianAddress = new SignalProtocolAddress("sebastian", 1);
 
 function App() {
   const [adiStore] = useState(new SignalProtocolStore());
-  const [brunhildeStore] = useState(new SignalProtocolStore());
+  const [sebastianStore] = useState(new SignalProtocolStore());
 
   const [aHasIdentity, setAHasIdentity] = useState(false);
   const [bHasIdentity, setBHasIdentity] = useState(false);
@@ -120,8 +120,8 @@ function App() {
 
   const [hasSession, setHasSession] = useState(false);
 
-  const [adalheidTyping, setAdalheidTyping] = useState("");
-  const [brunhildeTyping, setBrunhildeTyping] = useState("");
+  const [duvanTyping, setDuvanidTyping] = useState("");
+  const [sebastianTyping, setSebastianTyping] = useState("");
 
   const [processing, setProcessing] = useState(false);
   const [story, setStory] = useState(initialStory);
@@ -146,9 +146,9 @@ function App() {
     }
 
     const getReceivingSessionCipherForRecipient = (to: string) => {
-      // send from Brünhild to Adalheid so use his store
-      const store = to === "brünhild" ? brunhildeStore : adiStore;
-      const address = to === "brünhild" ? adalheidAddress : brunhildeAddress;
+      // send from Sebastian to Duvan so use his store
+      const store = to === "sebastian" ? sebastianStore : adiStore;
+      const address = to === "sebastian" ? duvanAddress : sebastianAddress;
       return new SessionCipher(store, address);
     };
 
@@ -169,7 +169,7 @@ function App() {
     doProcessing().then(() => {
       setProcessing(false);
     });
-  }, [adiStore, brunhildeStore, messages, processedMessages, processing]);
+  }, [adiStore, sebastianStore, messages, processedMessages, processing]);
 
   const readMessage = async (msg: ChatMessage, cipher: SessionCipher) => {
     let plaintext: ArrayBuffer = new Uint8Array().buffer;
@@ -239,14 +239,14 @@ function App() {
     updateStory(createidMD);
   };
 
-  const createAdalheidIdentity = async () => {
-    await createID("adalheid", adiStore);
+  const createDuvanidIdentity = async () => {
+    await createID("duvan", adiStore);
     console.log({ adiStore });
     setAHasIdentity(true);
   };
 
-  const createBrunhildeIdentity = async () => {
-    await createID("brünhild", brunhildeStore);
+  const createSebastianIdentity = async () => {
+    await createID("sebastian", sebastianStore);
     setBHasIdentity(true);
   };
 
@@ -272,12 +272,12 @@ function App() {
   const starterMessageBytes = Uint8Array.from([70, 111, 111])
   // const starterMessageBytes = Uint8Array.from([0,0, 0, 0])
 
-  const startSessionWithBrunhilde = async () => {
-    // get Brünhild' key bundle
-    const brunhildeBundle = directory.getPreKeyBundle("brünhild");
-    console.log({ brunhildeBundle });
+  const startSessionWithSebastian = async () => {
+    // get Sebastian' key bundle
+    const sebastianBundle = directory.getPreKeyBundle("sebastian");
+    console.log({ sebastianBundle });
 
-    const recipientAddress = brunhildeAddress;
+    const recipientAddress = sebastianAddress;
 
     // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
     const sessionBuilder = new SessionBuilder(adiStore, recipientAddress);
@@ -285,46 +285,46 @@ function App() {
     // Process a prekey fetched from the server. Returns a promise that resolves
     // once a session is created and saved in the store, or rejects if the
     // identityKey differs from a previously seen identity for this address.
-    console.log("adalheid processing prekey");
-    await sessionBuilder.processPreKey(brunhildeBundle!);
+    console.log("duvan processing prekey");
+    await sessionBuilder.processPreKey(sebastianBundle!);
 
     // // Now we can send an encrypted message
-    // const adalheidSessionCipher = new SessionCipher(adiStore, recipientAddress);
-    // const ciphertext = await adalheidSessionCipher.encrypt(
+    // const duvanSessionCipher = new SessionCipher(adiStore, recipientAddress);
+    // const ciphertext = await duvanSessionCipher.encrypt(
     //   starterMessageBytes.buffer
     // );
 
-    // sendMessage("brünhild", "adalheid", ciphertext);
+    // sendMessage("sebastian", "duvan", ciphertext);
     updateStory(startSessionWithBMD);
     setHasSession(true);
   };
 
-  const startSessionWithAdalheid = async () => {
-    // get Adalheid's key bundle
-    const adalheidBundle = directory.getPreKeyBundle("adalheid");
-    console.log({ adalheidBundle });
+  const startSessionWithDuvanid = async () => {
+    // get Duvan's key bundle
+    const duvanBundle = directory.getPreKeyBundle("duvan");
+    console.log({ duvanBundle });
 
-    const recipientAddress = adalheidAddress;
+    const recipientAddress = duvanAddress;
 
     // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
-    const sessionBuilder = new SessionBuilder(brunhildeStore, recipientAddress);
+    const sessionBuilder = new SessionBuilder(sebastianStore, recipientAddress);
 
     // Process a prekey fetched from the server. Returns a promise that resolves
     // once a session is created and saved in the store, or rejects if the
     // identityKey differs from a previously seen identity for this address.
-    console.log("brünhild processing prekey");
-    await sessionBuilder.processPreKey(adalheidBundle!);
+    console.log("sebastian processing prekey");
+    await sessionBuilder.processPreKey(duvanBundle!);
 
     // // Now we can send an encrypted message
-    // const brunhildeSessionCipher = new SessionCipher(
-    //   brunhildeStore,
+    // const sebastianSessionCipher = new SessionCipher(
+    //   sebastianStore,
     //   recipientAddress
     // );
-    // const ciphertext = await brunhildeSessionCipher.encrypt(
+    // const ciphertext = await sebastianSessionCipher.encrypt(
     //   starterMessageBytes.buffer
     // );
 
-    // sendMessage("adalheid", "brünhild", ciphertext);
+    // sendMessage("duvan", "sebastian", ciphertext);
     updateStory(startSessionWithAMD);
     setHasSession(true);
   };
@@ -348,22 +348,22 @@ function App() {
   };
 
   const getSessionCipherForRecipient = (to: string) => {
-    // send from Brünhild to adalheid so use his store
-    const store = to === "adalheid" ? brunhildeStore : adiStore;
-    const address = to === "adalheid" ? adalheidAddress : brunhildeAddress;
+    // send from Sebastian to duvan so use his store
+    const store = to === "duvan" ? sebastianStore : adiStore;
+    const address = to === "duvan" ? duvanAddress : sebastianAddress;
     return new SessionCipher(store, address);
   };
 
   const encryptAndSendMessage = async (to: string, message: string) => {
     const cipher = getSessionCipherForRecipient(to);
-    const from = to === "adalheid" ? "brünhild" : "adalheid";
+    const from = to === "duvan" ? "sebastian" : "duvan";
     const ciphertext = await cipher.encrypt(
       new TextEncoder().encode(message).buffer
     );
-    if (from === "adalheid") {
-      setAdalheidTyping("");
+    if (from === "duvan") {
+      setDuvanidTyping("");
     } else {
-      setBrunhildeTyping("");
+      setSebastianTyping("");
     }
     sendMessage(to, from, ciphertext);
     updateStory(sendMessageMD);
@@ -385,9 +385,9 @@ function App() {
   };
 
   const sendMessageControl = (to: string) => {
-    const value = to === "adalheid" ? brunhildeTyping : adalheidTyping;
+    const value = to === "duvan" ? sebastianTyping : duvanTyping;
     const onTextChange =
-      to === "adalheid" ? setBrunhildeTyping : setAdalheidTyping;
+      to === "duvan" ? setSebastianTyping : setDuvanidTyping;
     return (
       <Grid item xs={12} key="input">
         <Paper className={classes.paper}>
@@ -427,7 +427,7 @@ function App() {
                     style={{ textAlign: "right", verticalAlign: "top" }}
                     gutterBottom
                   >
-                    Adalheid's View
+                    Duvan's View
                   </Typography>
                 </Grid>
                 <Grid item xs={1}></Grid>
@@ -438,7 +438,7 @@ function App() {
                   {aHasIdentity ? (
                     <React.Fragment>
                       <Chip
-                        label={`Adalheid Registration ID: ${adiStore.get(
+                        label={`Duvan Registration ID: ${adiStore.get(
                           "registrationID",
                           ""
                         )}`}
@@ -449,9 +449,9 @@ function App() {
                         <Button
                           className={classes.buttonitem}
                           variant="contained"
-                          onClick={startSessionWithBrunhilde}
+                          onClick={startSessionWithSebastian}
                         >
-                          Start session with Brünhild
+                          Start session with Sebastian
                         </Button>
                       )}
                     </React.Fragment>
@@ -459,21 +459,21 @@ function App() {
                     <Button
                       className={classes.buttonitem}
                       variant="contained"
-                      onClick={createAdalheidIdentity}
+                      onClick={createDuvanidIdentity}
                     >
-                      Create an identity for Adalheid
+                      Create an identity for Duvan
                     </Button>
                   )}
                 </Grid>
-                {hasSession ? sendMessageControl("brünhild") : <div />}
-                {displayMessages("adalheid")}
+                {hasSession ? sendMessageControl("sebastian") : <div />}
+                {displayMessages("duvan")}
               </Grid>
             </Paper>
           </Grid>
           <Grid item xs={6}>
             <Paper className={classes.paper}>
               <Typography variant="h3" component="h3" gutterBottom>
-                Adalheid talks to Brünhild
+                Duvan talks to Sebastian
               </Typography>
               <ReactMarkdown
                 children={story}
@@ -495,14 +495,14 @@ function App() {
                     style={{ textAlign: "left", verticalAlign: "top" }}
                     gutterBottom
                   >
-                    Brünhild's View
+                    Sebastian's View
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
                   {bHasIdentity ? (
                     <React.Fragment>
                       <Chip
-                        label={`Brünhild's Registration ID: ${brunhildeStore.get(
+                        label={`Sebastian's Registration ID: ${sebastianStore.get(
                           "registrationID",
                           ""
                         )}`}
@@ -513,23 +513,23 @@ function App() {
                         <Button
                           className={classes.buttonitem}
                           variant="contained"
-                          onClick={startSessionWithAdalheid}
+                          onClick={startSessionWithDuvanid}
                         >
-                          Start session with Adalheid
+                          Start session with Duvan
                         </Button>
                       )}
                     </React.Fragment>
                   ) : (
                     <Button
                       variant="contained"
-                      onClick={createBrunhildeIdentity}
+                      onClick={createSebastianIdentity}
                     >
-                      Create an identity for Brünhild
+                      Create an identity for Sebastian
                     </Button>
                   )}
                 </Grid>
-                {hasSession ? sendMessageControl("adalheid") : <div />}
-                {displayMessages("brünhild")}
+                {hasSession ? sendMessageControl("duvan") : <div />}
+                {displayMessages("sebastian")}
               </Grid>
             </Paper>
           </Grid>
