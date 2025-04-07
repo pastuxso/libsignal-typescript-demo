@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import "./App.css";
 
 import ReactMarkdown from "react-markdown";
-
+import SendIcon from "@material-ui/icons/Send";
+import React, { useEffect, useState } from "react";
 import {
-  KeyHelper,
-  SignedPublicPreKeyType,
-  SignalProtocolAddress,
-  SessionBuilder,
-  PreKeyType,
-  SessionCipher,
-  MessageType,
-} from "@privacyresearch/libsignal-protocol-typescript";
-
-import "./App.css";
-import {
-  Paper,
-  Grid,
   Avatar,
-  Typography,
   Button,
   Chip,
+  Grid,
+  Paper,
   TextField,
+  Typography,
 } from "@material-ui/core";
-import SendIcon from "@material-ui/icons/Send";
+import {
+  KeyHelper,
+  MessageType,
+  PreKeyType,
+  SessionBuilder,
+  SessionCipher,
+  SignalProtocolAddress,
+  SignedPublicPreKeyType,
+} from "@privacyresearch/libsignal-protocol-typescript";
+import { makeStyles } from "@material-ui/core/styles";
 
-import { SignalProtocolStore } from "./storage-type";
-import { SignalDirectory } from "./signal-directory";
 import CodeBlock from "./code-block";
+import { SignalDirectory } from "./signal-directory";
+import { SignalProtocolStore } from "./storage-type";
 
 const initialStory =
   "# Start using the demo to see what is happening in the code";
@@ -175,8 +173,8 @@ function App() {
 
   const readMessage = async (msg: ChatMessage, cipher: SessionCipher) => {
     let plaintext: ArrayBuffer = new Uint8Array().buffer;
+
     if (msg.message.type === 3) {
-      console.log({ msg });
       plaintext = await cipher.decryptPreKeyWhisperMessage(
         msg.message.body!,
         "binary"
@@ -189,7 +187,7 @@ function App() {
       );
     }
     const stringPlaintext = new TextDecoder().decode(new Uint8Array(plaintext));
-    console.log(stringPlaintext);
+    console.log(`readMessage from ${msg.from} to ${msg.to} type ${msg.message.type} body ${new TextEncoder().encode(msg.message.body!)} ${stringPlaintext}`);
 
     const { id, to, from } = msg;
     return { id, to, from, messageText: stringPlaintext };
@@ -252,23 +250,27 @@ function App() {
     setBHasIdentity(true);
   };
 
-  const starterMessageBytes = Uint8Array.from([
-    0xce,
-    0x93,
-    0xce,
-    0xb5,
-    0xce,
-    0xb9,
-    0xce,
-    0xac,
-    0x20,
-    0xcf,
-    0x83,
-    0xce,
-    0xbf,
-    0xcf,
-    0x85,
-  ]);
+  // const starterMessageBytes = Uint8Array.from([
+  //   0xce,
+  //   0x93,
+  //   0xce,
+  //   0xb5,
+  //   0xce,
+  //   0xb9,
+  //   0xce,
+  //   0xac,
+  //   0x20,
+  //   0xcf,
+  //   0x83,
+  //   0xce,
+  //   0xbf,
+  //   0xcf,
+  //   0x85,
+  // ]);
+
+  // "Foo"
+  const starterMessageBytes = Uint8Array.from([70, 111, 111])
+  // const starterMessageBytes = Uint8Array.from([0,0, 0, 0])
 
   const startSessionWithBrunhilde = async () => {
     // get Brünhild' key bundle
@@ -286,14 +288,15 @@ function App() {
     console.log("adalheid processing prekey");
     await sessionBuilder.processPreKey(brunhildeBundle!);
 
-    // Now we can send an encrypted message
-    const adalheidSessionCipher = new SessionCipher(adiStore, recipientAddress);
-    const ciphertext = await adalheidSessionCipher.encrypt(
-      starterMessageBytes.buffer
-    );
+    // // Now we can send an encrypted message
+    // const adalheidSessionCipher = new SessionCipher(adiStore, recipientAddress);
+    // const ciphertext = await adalheidSessionCipher.encrypt(
+    //   starterMessageBytes.buffer
+    // );
 
-    sendMessage("brünhild", "adalheid", ciphertext);
+    // sendMessage("brünhild", "adalheid", ciphertext);
     updateStory(startSessionWithBMD);
+    setHasSession(true);
   };
 
   const startSessionWithAdalheid = async () => {
@@ -312,24 +315,25 @@ function App() {
     console.log("brünhild processing prekey");
     await sessionBuilder.processPreKey(adalheidBundle!);
 
-    // Now we can send an encrypted message
-    const brunhildeSessionCipher = new SessionCipher(
-      brunhildeStore,
-      recipientAddress
-    );
-    const ciphertext = await brunhildeSessionCipher.encrypt(
-      starterMessageBytes.buffer
-    );
+    // // Now we can send an encrypted message
+    // const brunhildeSessionCipher = new SessionCipher(
+    //   brunhildeStore,
+    //   recipientAddress
+    // );
+    // const ciphertext = await brunhildeSessionCipher.encrypt(
+    //   starterMessageBytes.buffer
+    // );
 
-    sendMessage("adalheid", "brünhild", ciphertext);
+    // sendMessage("adalheid", "brünhild", ciphertext);
     updateStory(startSessionWithAMD);
+    setHasSession(true);
   };
 
   const displayMessages = (sender: string) => {
-    return processedMessages.map((m) => (
+    return processedMessages.map((m, index) => (
       <React.Fragment>
         {m.from === sender ? <Grid xs={2} item /> : <div />}
-        <Grid xs={10} item key={m.id}>
+        <Grid xs={10} item key={`${m.id}-${index}`}>
           <Paper
             className={
               m.from === sender ? classes.outgoingmessage : classes.message
@@ -363,6 +367,21 @@ function App() {
     }
     sendMessage(to, from, ciphertext);
     updateStory(sendMessageMD);
+
+    // try {
+    //   const copy = ciphertext.body!.slice(0, ciphertext.body!.length);
+
+    //   const cipher2 = getSessionCipherForRecipient(from);
+
+    //   const unencrypted = await cipher2.decryptPreKeyWhisperMessage(
+    //     copy,
+    //     "binary"
+    //     );
+    //   const unencryptedString = new TextDecoder().decode(new Uint8Array(unencrypted));
+    //   console.log(`unencrypted: ${unencryptedString} ${to}`);
+    // } catch (e) {
+    //   console.log(`error: ${e}`);
+    // }
   };
 
   const sendMessageControl = (to: string) => {
